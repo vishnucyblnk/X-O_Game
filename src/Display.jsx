@@ -1,222 +1,182 @@
 import React, { useState } from 'react';
 import './Display.css';
-import { Form, Modal } from 'react-bootstrap';
+import { Form } from 'react-bootstrap';
 
 function Display() {
     const [buttonCount, setButtonCount] = useState(0);
     const [matrix, setMatrix] = useState([]);
-    const [playerScore,setPlayerScore] = useState(0);
-    const [aiScore,setAiScore] = useState(0);
+    const [playerScore, setPlayerScore] = useState(0);
+    const [aiScore, setAiScore] = useState(0);
     const [isCount1Turn, setIsCount1Turn] = useState(true);
     const [buttonColors, setButtonColors] = useState({});
-    const [show,setShow] = useState({});
+    const [show, setShow] = useState({});
     const [isInputDisabled, setIsInputDisabled] = useState(false);
-    const [countt,setCountt] = useState(0)
-    const [click,setClick] = useState(0)
+    const [countt, setCountt] = useState(0);
+    const [click, setClick] = useState(0);
 
-    // Function to toggle the input field's disabled state
-    const toggleInput = () => {
-        setIsInputDisabled(!isInputDisabled);
-    };
-    
-    const toggleRefresh =()=>{
+    const toggleRefresh = () => {
         window.location.reload();
-    }
+    };
 
     const handleInputChange = (e) => {
         const value = parseInt(e.target.value);
         setButtonCount(isNaN(value) ? 0 : value);
-        generateMatrix(value)
-        
+        generateMatrix(value);
     };
-
-// generating Buttons-------------------------------------------------------------
-
-                // const createButtons = () => {
-                //     const buttons = [];
-                //     for (let i = 1; i <= buttonCount; i++) {
-                //         buttons.push(
-                //             <div key={i}>
-                //                 {
-                //                 Array(i).fill(null).map((_,j) => (
-                //                     <button key={j} type="button" className="rounded-circle m-2 fw-bold p-3 btn btn-primary" fdprocessedid="bo9s8q"> {j+1} </button>
-                //                 )) 
-                //                 }
-                //             </div>)
-                //     }
-                //     return buttons;
-                // };
-        
 
     const createButtons = () => {
         const buttons = [];
         for (let i = 1; i <= buttonCount; i++) {
-          for (let j = 0; j < i; j++) {
-            const buttonId = `${i}-${j + 1}`;
-            const buttonColor = buttonColors[buttonId] || 'danger';
-            const buttonValue = show[buttonId] || '-';
-            buttons.push(
-                <button id={`${i}-${j + 1}`} value={false} key={j} type="button" className={`btn btn-${buttonColor} shadow rounded-circle m-2 fw-bold p-3`} fdprocessedid="ya1lpr" onClick={(e)=>{handleClick(e)}} disabled={buttonColors[buttonId] === 'disabled'}> {buttonValue} </button>
-            );
-          }
-          buttons.push(<br key={`br-${i}`} />);
+            for (let j = 0; j < i; j++) {
+                const buttonId = `${i}-${j + 1}`;
+                const buttonColor = buttonColors[buttonId] || 'danger';
+                const buttonValue = show[buttonId] || '-';
+                buttons.push(
+                    <button
+                        id={`${i}-${j + 1}`}
+                        key={j}
+                        type="button"
+                        className={`btn btn-${buttonColor} m-2 fw-bold p-3 text-white`}
+                        onClick={(e) => handleClick(e)}
+                        disabled={buttonColors[buttonId] === 'disabled'}
+                    >
+                        {buttonValue}
+                    </button>
+                );
+            }
+            buttons.push(<br key={`br-${i}`} />);
         }
         return buttons;
-      };
-
-// generating matrix for adding value for each buttons ---------------------------------
+    };
 
     const generateMatrix = (value) => {
         const newMatrix = [];
         for (let i = 0; i < value; i++) {
             const row = [];
-            for (let j = 0; j < i+1 ; j++) {
-            row[j] = false;
+            for (let j = 0; j < i + 1; j++) {
+                row[j] = false;
             }
             newMatrix.push(row);
         }
         setMatrix(newMatrix);
-        console.log(matrix);
     };
 
-// handling each button click ----------------------------------------------------------
-
-    const handleClick = (e)=>{
-        if(buttonCount>1 && buttonCount < 14){
+    const handleClick = (e) => {
+        if (buttonCount > 1 && buttonCount < 14) {
             const oneSize = [].concat(...matrix).length;
-            setCountt(oneSize)
-            setClick((click)=>click+1)
+            setCountt(oneSize);
+            setClick((click) => click + 1);
 
-            const {id} = e.target
+            const { id } = e.target;
 
             const buttonId = e.target.id;
             if (buttonColors[buttonId] === 'disabled') {
                 return;
             }
+
             // Disable the clicked button
             const updatedButtonColors = { ...buttonColors };
             updatedButtonColors[buttonId] = 'disabled';
             setButtonColors(updatedButtonColors);
-            if (isCount1Turn) {
-                setShow({ ...show, [buttonId]: 'x' })
-            } 
-            else {
-                setShow({ ...show, [buttonId]: 'o' })
-            }
-            
-            // console.log(value);
-            // console.log(id);
-            const ext = id.split('-')
-            const rowId = ext[0]-1
-            const colId = ext[1]-1
-            // console.log(rowId,colId);
-            // console.log(matrix);
-            const tempMatrix = [...matrix]
+
+            // Set 'X' or 'O' based on the current player's turn
+            setShow({ ...show, [buttonId]: isCount1Turn ? 'x' : 'o' });
+
+            // Identify row and column
+            const ext = id.split('-');
+            const rowId = parseInt(ext[0]) - 1;
+            const colId = parseInt(ext[1]) - 1;
+
+            // Update matrix with the click
+            const tempMatrix = [...matrix];
             tempMatrix[rowId][colId] = true;
-            setMatrix(tempMatrix)
-            // console.log(matrix);
-            checkStatus(rowId,colId)
-            }else{
-                alert('please input value between 2 to 13 ')
-                toggleRefresh()
-            }
-        
-    }
+            setMatrix(tempMatrix);
 
-// checking status of each button
-
-    const checkStatus = (rowId,colId)=>{
-        let tempScore;
-        if (isCount1Turn) {
-            tempScore = playerScore
-        } 
-        else {
-            tempScore = aiScore
+            checkStatus(rowId, colId);
+        } else {
+            alert('Please input a value between 2 and 13.');
+            toggleRefresh();
         }
-        // -----transposing matrix -----------
-        // Find the maximum length among subarrays
-        const maxLength = Math.max(...matrix.map(arr => arr.length));
-        // Initialize the transposed array
+    };
+    const checkStatus = (rowId, colId) => {
+        // Determine the current player's score
+        let tempPlayerScore = isCount1Turn ? playerScore : aiScore;
+        let tempOtherScore = isCount1Turn ? aiScore : playerScore;
+    
+        // Transpose matrix to check columns
+        const maxLength = Math.max(...matrix.map((arr) => arr.length));
         const transposedArray = Array.from({ length: maxLength }, () => []);
-        // Transpose the original array
         for (let i = 0; i < maxLength; i++) {
             for (let j = 0; j < matrix.length; j++) {
                 if (matrix[j][i] !== undefined) {
-                transposedArray[i].push(matrix[j][i]);
+                    transposedArray[i].push(matrix[j][i]);
                 }
             }
         }
-
-        let checker = arr => arr.every(v => v === true);
-        const tempRowMatrix = [...matrix]
-        const tempColMatrix = [...transposedArray]
-
-        const rowCheck = checker(tempRowMatrix[rowId])
-        const colCheck = checker(tempColMatrix[colId])
-        // console.log(rowCheck,colCheck);
-
-        
-        // Player Score Counting--------------------------------------------------
-        
-        if(rowCheck === true){
-            console.log('hai row');
-            console.log(tempRowMatrix[rowId].length);
-            tempScore += tempRowMatrix[rowId].length
-        }
-        else if(colCheck === true){
-           console.log('hai col')
-           console.log(tempColMatrix[colId].length);
-           tempScore += tempColMatrix[colId].length
-        }
-
-        // setPlayerScore(tempScore)
-        // console.log(`playerScore = ${playerScore}`);
-
-        const handleIncrement = () => {
-            if (isCount1Turn) {
-            setPlayerScore(tempScore)
-            } 
-            else {
-            setAiScore(tempScore)
+    
+        const checker = (arr) => arr.every((v) => v === true);
+        const rowComplete = checker(matrix[rowId]);
+        const colComplete = checker(transposedArray[colId]);
+    
+        // Calculate scores for row and column completions
+        const rowScore = rowComplete ? matrix[rowId].length : 0;
+        const colScore = colComplete ? transposedArray[colId].length : 0;
+    
+        // Determine the best and least scores
+        const bestScore = Math.max(rowScore, colScore);
+        const leastScore = Math.min(rowScore, colScore);
+    
+        // Update scores based on the best and least scores
+        if (rowComplete || colComplete) {
+            if (rowScore >= colScore) {
+                tempPlayerScore += rowScore;
+            } else {
+                tempPlayerScore += colScore;
             }
-            setIsCount1Turn(!isCount1Turn);
-        };
-        handleIncrement()
+            tempOtherScore += leastScore;
+        }
+    
+        // Update the scores in state
+        if (isCount1Turn) {
+            setPlayerScore(tempPlayerScore);
+            setAiScore(tempOtherScore);
+        } else {
+            setAiScore(tempPlayerScore);
+            setPlayerScore(tempOtherScore);
+        }
 
-
-        
-    }
-
+    
+        // Switch the turn
+        setIsCount1Turn(!isCount1Turn);
+    };
 
     return (
-        <> 
-            <div className='row' style={{maxHeight:'110vh'}}>
+        <>
+            <div className='row' style={{ maxHeight: '110vh' }}>
                 <div className="col-lg-4 d-flex flex-column p-5">
                     <div className='d-flex flex-column align-items-center'>
                         <h1 className='mb-5 text-center text-warning fw-bold'>X-O GAME</h1>
-                        <h5 className='mt-2 mb-3 text-center'>Enter the size of Game (1 to 13)</h5>
-                        <div className='d-flex justify-content-center mb-5 '>
-                            <Form.Control type="number" value={buttonCount} min="2" max="13" onChange={(e)=>handleInputChange(e)}  disabled={isInputDisabled} />
-                
-                            <button type="button" className="btn btn-primary" fdprocessedid="bo9s8q" onClick={toggleRefresh} >NEW GAME</button>
+                        <h5 className='mt-2 mb-3 text-center'>Enter the size of the Game (2 to 13)</h5>
+                        <div className='d-flex justify-content-center mb-5'>
+                            <Form.Control type="number" value={buttonCount} min="2" max="13" onChange={(e) => handleInputChange(e)} disabled={isInputDisabled} />
+                            <button type="button" className="btn btn-primary" onClick={toggleRefresh}>NEW GAME</button>
                         </div>
                     </div>
                     <div className="p-3 scoreCard border border-secondary rounded">
                         <h4 className='mt-2 text-center text-info'>SCORE CARD</h4>
                         <div className='d-flex flex-column justify-content-evenly align-items-center'>
-                        
-                        <h5><span className='text-secondary'>(X)</span> PLAYER 1 : {playerScore}</h5>
-                        <h5><span className='text-secondary'>(O)</span> PLAYER 2 : {aiScore}</h5>
+                            <h5><span className='text-secondary'>(X)</span> PLAYER 1: {playerScore}</h5>
+                            <h5><span className='text-secondary'>(O)</span> PLAYER 2: {aiScore}</h5>
                         </div>
                     </div>
                 </div>
                 <div className="col-lg-8 mt-4 p-5">
                     <div className="d-flex flex-column justify-content-evenly align-items-center">
                         {(countt === click && countt !== 0 && click !== 0) && (
-                            <div class="card mb-5 bg-success text-center">
-                                    <h2 className='text-secondary-emphasis fw-bold fs-1'>
+                            <div className="card mb-5 bg-success text-center">
+                                <h2 className='text-secondary-emphasis fw-bold fs-1'>
                                     {playerScore > aiScore ? 'PLAYER 1 WON' : aiScore > playerScore ? 'PLAYER 2 WON' : 'TIE'}
-                                    </h2>
+                                </h2>
                             </div>
                         )}
                         <div className="button-container">{createButtons()}</div>
@@ -225,7 +185,6 @@ function Display() {
             </div>
         </>
     );
-  }
+}
 
-
-export default Display 
+export default Display;
